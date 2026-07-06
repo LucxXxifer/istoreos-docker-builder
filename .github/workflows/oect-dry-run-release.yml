@@ -1,0 +1,55 @@
+name: OECT iStoreOS Scaffold Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag to create or update
+        required: true
+        default: oect-istoreos-scaffold-20260706
+
+permissions:
+  contents: write
+
+jobs:
+  scaffold:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate security boundary
+        run: |
+          chmod +x oect/security-scan.sh oect/production-manifest.sh
+          ./oect/security-scan.sh oect/files oect/security-denylist.txt
+          ./oect/security-scan.sh targets/oect-fnos-arm64/files oect/security-denylist.txt
+
+      - name: Build scaffold artifacts
+        run: |
+          set -eu
+          rm -rf dist
+          mkdir -p dist/seed-files dist/target-oect-fnos-arm64
+          cp -a oect/files dist/seed-files/files
+          cp -a targets/oect-fnos-arm64/config.seed targets/oect-fnos-arm64/packages.list targets/oect-fnos-arm64/build.sh dist/target-oect-fnos-arm64/
+          cp -a oect/README.md dist/SAFETY.md
+          ./oect/production-manifest.sh "${{ inputs.release_tag }}" > dist/manifest.json
+          tar -C dist/seed-files -czf dist/oect-istoreos-seed-files.tar.gz files
+          tar -C dist/target-oect-fnos-arm64 -czf dist/oect-fnos-arm64-target.tar.gz .
+          (cd dist && sha256sum manifest.json SAFETY.md oect-istoreos-seed-files.tar.gz oect-fnos-arm64-target.tar.gz > SHA256SUMS)
+
+      - name: Publish scaffold release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          name: OECT iStoreOS scaffold ${{ inputs.release_tag }}
+          body_path: dist/SAFETY.md
+          prerelease: true
+          make_latest: false
+          files: |
+            dist/manifest.json
+            dist/SHA256SUMS
+            dist/SAFETY.md
+            dist/oect-istoreos-seed-files.tar.gz
+            dist/oect-fnos-arm64-target.tar.gz

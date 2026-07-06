@@ -1,0 +1,74 @@
+name: OECT iStoreOS Rootfs Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Release tag to create
+        required: true
+        default: oect-istoreos-rootfs-manual
+      imagebuilder_url:
+        description: Official iStoreOS ImageBuilder .tar.zst URL
+        required: true
+      imagebuilder_sha256:
+        description: Expected sha256 of the ImageBuilder archive
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-rootfs:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install build helpers
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential gawk unzip file wget zstd python3
+
+      - name: Validate security boundary
+        run: |
+          chmod +x oect/security-scan.sh targets/oect-fnos-arm64/build.sh
+          ./oect/security-scan.sh targets/oect-fnos-arm64/files oect/security-denylist.txt
+
+      - name: Download and verify ImageBuilder
+        run: |
+          set -eu
+          mkdir -p work/imagebuilder
+          wget -O work/imagebuilder/imagebuilder.tar.zst "${{ inputs.imagebuilder_url }}"
+          echo "${{ inputs.imagebuilder_sha256 }}  work/imagebuilder/imagebuilder.tar.zst" | sha256sum -c -
+          tar --zstd -xf work/imagebuilder/imagebuilder.tar.zst -C work/imagebuilder
+
+      - name: Build rootfs tarball
+        run: |
+          set -eu
+          ib_dir="$(find work/imagebuilder -mindepth 1 -maxdepth 1 -type d | head -n 1)"
+          cd "$ib_dir"
+          "$GITHUB_WORKSPACE/targets/oect-fnos-arm64/build.sh"
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          find bin/targets -type f \( -name '*rootfs.tar.gz' -o -name '*rootfs.tar' \) -exec cp -v {} "$GITHUB_WORKSPACE/dist/" \;
+          test "$(find "$GITHUB_WORKSPACE/dist" -type f | wc -l)" -gt 0
+
+      - name: Create release metadata
+        run: |
+          set -eu
+          chmod +x oect/production-manifest.sh
+          ./oect/production-manifest.sh "${{ inputs.release_tag }}" > dist/manifest.json
+          cp oect/README.md dist/SAFETY.md
+          (cd dist && sha256sum * > SHA256SUMS)
+
+      - name: Publish rootfs release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          name: OECT iStoreOS rootfs ${{ inputs.release_tag }}
+          body_path: dist/SAFETY.md
+          prerelease: true
+          make_latest: false
+          files: |
+            dist/*

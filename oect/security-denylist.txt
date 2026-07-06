@@ -1,0 +1,20 @@
+tailscaled.state
+authkey
+tskey-
+BEGIN OPENSSH PRIVATE KEY
+BEGIN PRIVATE KEY
+id_rsa
+id_ed25519
+ShellCrash
+CrashCore
+subconverter
+subscription
+subscribe
+lucky.conf
+lucky.json
+acme.json
+fullchain.pem
+privkey.pem
+root:$1$
+root:$5$
+root:$6$

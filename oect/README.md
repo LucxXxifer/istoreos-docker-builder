@@ -1,0 +1,30 @@
+# OECT fnOS iStoreOS Docker Production Scaffold
+
+This directory contains the production scaffold for the OECT/fnOS Docker iStoreOS side-router image line.
+
+The first release is intentionally a scaffold release. It publishes seed files, a manifest, checksums, and safety notes. It does not claim that a full rootfs, Docker image, or live fnOS deployment has already passed.
+
+## Baseline
+
+- Container IP: `192.168.31.3`
+- LAN subnet: `192.168.31.0/24`
+- Gateway: `192.168.31.1`
+- DHCP server: disabled
+- LAN masquerade: enabled for `192.168.31.0/24 -> !192.168.31.0/24`
+- Runtime expectation: Docker container with `/sbin/init`, `privileged: true`, `/dev/net/tun`, and `restart: unless-stopped`
+
+## Safety Boundary
+
+Do not publish any artifact containing:
+
+- Tailscale identity, auth key, or `tailscaled.state`
+- ShellCrash subscription, profile, or CrashCore runtime
+- Lucky certificate, token, private domain, or private reverse-proxy config
+- root password hash
+- SSH private key
+
+Personal state belongs in a private local reapply pack, not in a public GitHub Release.
+
+## Promotion Rule
+
+New images and plugin artifacts must be tested on an A/B IP such as `192.168.31.4` before replacing the production `.3` router. Passing this scaffold workflow is not enough to promote a live router.

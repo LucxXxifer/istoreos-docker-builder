@@ -1,155 +1,53 @@
-![GitHub stars](https://img.shields.io/github/stars/wukongdaily/istoreos-docker-builder?style=flat-square)
-![GitHub forks](https://img.shields.io/github/forks/wukongdaily/istoreos-docker-builder?style=flat-square)
-![License](https://img.shields.io/github/license/wukongdaily/istoreos-docker-builder?style=flat-square)
-[![Docker Pulls](https://img.shields.io/docker/pulls/wukongdaily/openwrt-istoreos?style=flat-square)](https://hub.docker.com/r/wukongdaily/openwrt-istoreos)
-![Last Commit](https://img.shields.io/github/last-commit/wukongdaily/istoreos-docker-builder?style=flat-square)
-[![Releases](https://img.shields.io/github/v/release/wukongdaily/istoreos-docker-builder?style=flat-square)](https://github.com/wukongdaily/istoreos-docker-builder/releases)
+# OECT fnOS iStoreOS Docker Builder
 
-English | [简体中文](README_CN.md)
+This fork is the production scaffold for building a private OECT/fnOS Docker iStoreOS side-router image line.
 
-### ⚠️ Privilege Notice
+Upstream attribution is preserved in `LICENSE` and git history. This fork does not claim to be the upstream project.
 
-This container must run with the `--privileged` flag.
+## Current Production Scope
 
-This grants the container near **root-level** access to the host, allowing it to directly modify the host’s network and system configuration.  
-If the container or image is compromised, the risk is equivalent to the entire device being fully controlled.
+The default production workflow is:
 
-Only use this container if you **fully understand the risks and trust the image source**, especially in NAS environments such as  fnOS and UGOS devices.
-# istoreos-docker-builder
+- `.github/workflows/oect-dry-run-release.yml`
 
-🔗 Docker Hub：https://hub.docker.com/r/wukongdaily/openwrt-istoreos
+It publishes:
 
-Build a customized iStoreOS root filesystem for Docker using ImageBuilder.
+- `manifest.json`
+- `SHA256SUMS`
+- `SAFETY.md`
+- `oect-istoreos-seed-files.tar.gz`
+- `oect-fnos-arm64-target.tar.gz`
 
-This project provides reproducible build scripts and configurations for generating a minimal iStoreOS rootfs.
+This is a scaffold release. It proves the seed files, target files, checksums, and security gates are publishable. It does not claim a live fnOS/OECT deployment has passed.
 
----
+## Manual Rootfs Build
 
-## Features
+The manual workflow is:
 
-* Build iStoreOS rootfs for Docker
-* Support multiple targets (x86_64 / armsr)
-* Custom package selection
-* Preconfigured system files
+- `.github/workflows/oect-build-rootfs.yml`
 
----
+It requires an official iStoreOS ImageBuilder URL and its exact sha256. Do not run it with a drifting or unverified URL.
 
-## Supported Systems List
+## Network Baseline
 
-Supports **x86-64** and **arm64**
+- iStoreOS container IP: `192.168.31.3`
+- LAN gateway: `192.168.31.1`
+- LAN subnet: `192.168.31.0/24`
+- DHCP server: disabled
+- LAN masquerade: `192.168.31.0/24 -> !192.168.31.0/24`
 
-> It is recommended to run on systems with a relatively new Linux kernel (6.x), such as fnOS, UGOS, OMV, Armbian, Debian, Ubuntu, etc.
+## Security Boundary
 
----
+Public releases must not contain:
 
-## ✅ Tested and Verified
+- Tailscale identity, auth key, or `tailscaled.state`
+- ShellCrash subscription, profile, or CrashCore runtime
+- Lucky certificate, token, domain, or private reverse-proxy rules
+- root password hash
+- SSH private keys
 
-- fnOS (x86-64, arm64)
-- UGOS (x86-64), arm64 (UGOS DH4300 PLUS tested)
-- openmediavault (OMV) (x86-64, arm64)
-- Armbian (x86-64, arm64)
+Private runtime state belongs in a local private reapply pack, not in a public image or GitHub Release.
 
----
+## Promotion Rule
 
-## ❌ Not Recommended / Compatibility Issues
-
-- TrueNAS — Compatibility issues. **Do not deploy.**
-- QNAP and Synology — Compatibility issues. **Do not deploy.**  
-  These systems heavily customize the Linux kernel and networking stack (virtual switches, OVS, `lxcbr0` bridges, permission controls, firewall rules), which differ significantly from standard Linux environments such as fnOS, UNRAID, and UGOS. It is recommended to use a virtual machine instead.
-- ZimaOS — Cannot run because Docker does not allow `privileged` mode. **Do not deploy.**
-
-## Customizations
-
-* Enabled rootfs tar output:
-* Custom ImageBuilder config (applied via config.seed)
-
-```bash
-CONFIG_TARGET_ROOTFS_TARGZ=y
-```
-
-* Custom packages via `packages.list`
-* Custom system configuration via `files/`
-
----
-
-## ImageBuilder
-
-ImageBuilder is provided by the official iStoreOS distribution:
-
-https://fw.koolcenter.com/iStoreOS/ib/
-
-
-https://site.istoreos.com/
-
-(Please download from the official source)
-
----
-
-## Build Instructions
-
-For each target (x86_64 / armsr):
-
-1. Download ImageBuilder
-2. Extract it:
-
-   ```bash
-   tar --zstd -xvf istoreos-imagebuilder-*.tar.zst
-   ```
-3. Place it inside the target directory
-4. Run:
-
-   ```bash
-   ./build.sh
-   ```
-
----
-
-## Project Structure
-
-```bash
-targets/
-  x86_64/
-    packages.list
-    config.seed
-    files/
-  armsr/
-    packages.list
-    config.seed
-    files/
-```
-
----
-
-## Upstream Projects
-
-* [iStoreOS](https://github.com/istoreos/istoreos)
-* [OpenWrt](https://github.com/openwrt/)
-
-This project does not include full source code.
-Please refer to upstream repositories for source code.
-
----
-
-## Author
-
-Packaged by **wukongdaily**
-
----
-
-## ❤️ Support
-
-If this project is helpful to you, you can support the development:
-
-* ⭐ Star this repository
-* 🔄 Share with others
-
-
-<a href="https://wkdaily.cpolar.cn/01" target="_blank">
-  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
-       alt="Buy Me A Coffee"
-       style="width:15%; height:auto;">
-</a>
-
-Thank you for your support!
-
-
+Build artifacts must be tested on an A/B IP such as `192.168.31.4` before replacing the production `.3` router. Passing GitHub Actions is not the same as passing live fnOS macvlan, LAN client, OECT reboot, and optional host BBR gates.
