@@ -70,5 +70,6 @@ jobs:
           body_path: dist/SAFETY.md
           prerelease: true
           make_latest: false
+          overwrite_files: true
           files: |
             dist/*

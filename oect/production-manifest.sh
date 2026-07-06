@@ -2,8 +2,9 @@
 set -eu
 
 release_tag="${1:-manual}"
-upstream_commit="$(git rev-parse upstream/master 2>/dev/null || true)"
-source_commit="$(git rev-parse HEAD)"
+upstream_commit="$(git ls-remote https://github.com/wukongdaily/istoreos-docker-builder.git refs/heads/master | awk '{print $1}')"
+[ -n "$upstream_commit" ] || upstream_commit="unknown"
+source_commit="$(git rev-parse --verify HEAD^{commit})"
 generated_at="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 cat <<JSON
