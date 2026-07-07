@@ -32,7 +32,11 @@
 
 - `https://fw.koolcenter.com/iStoreOS/ib/`
 
-選擇匹配的 target 目錄，例如 fnOS/OECT arm64 產線使用 `armsr/`，並先用官方 `sha256sums` 校驗 archive，再觸發 workflow。
+target 備註：
+
+- 本 repo 目前沿用上游 Docker rootfs 產線：`armsr/armv8`，對應官方 `armsr/` ImageBuilder。
+- OECT 硬件本身是 RK3566 / Rockchip。如果要做裸機或 RK 專用 iStoreOS 固件包，應使用官方 `rk3xxx/` ImageBuilder，也就是 `rockchip-armv8`。
+- 不要把 Docker rootfs target 當成已經構建了 RK 裸機固件包。觸發 workflow 前，必須先用官方 `sha256sums` 校驗選中的 archive。
 
 ## 網路基線
 

@@ -8,7 +8,11 @@ Official iStoreOS ImageBuilder entry:
 
 - `https://fw.koolcenter.com/iStoreOS/ib/`
 
-Use the matching target directory, such as `armsr/` for the fnOS/OECT arm64 line, and verify the ImageBuilder archive with the official `sha256sums` file before building a rootfs release.
+Target note:
+
+- This production scaffold currently follows upstream's Docker rootfs line: `armsr/armv8`, using the official `armsr/` ImageBuilder.
+- OECT hardware is RK3566/Rockchip. For a bare-metal or RK-specific iStoreOS firmware build, use the official `rk3xxx/` ImageBuilder (`rockchip-armv8`) instead.
+- Do not treat the Docker rootfs target as proof that a bare-metal RK firmware package has been built. Verify the selected ImageBuilder archive with the official `sha256sums` file before building a rootfs release.
 
 ## Baseline
 

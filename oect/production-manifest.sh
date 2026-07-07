@@ -40,10 +40,13 @@ cat <<JSON
   },
   "target": {
     "host": "fnOS/OECT",
+    "host_hardware": "OECT RK3566/Rockchip",
     "container_ip": "192.168.31.3",
     "lan_subnet": "192.168.31.0/24",
     "gateway": "192.168.31.1",
-    "arch": "armsr/armv8",
+    "container_rootfs_target": "armsr/armv8",
+    "bare_metal_imagebuilder_target": "rk3xxx/rockchip-armv8",
+    "target_scope": "Docker rootfs, not bare-metal RK firmware",
     "openwrt_release": "24.10.x"
   },
   "network_policy": {
