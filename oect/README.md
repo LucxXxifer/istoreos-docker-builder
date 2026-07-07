@@ -4,6 +4,12 @@ This directory contains the production scaffold for the OECT/fnOS Docker iStoreO
 
 The first release is intentionally a scaffold release. It publishes seed files, a manifest, checksums, and safety notes. It does not claim that a full rootfs, Docker image, or live fnOS deployment has already passed.
 
+Official iStoreOS ImageBuilder entry:
+
+- `https://fw.koolcenter.com/iStoreOS/ib/`
+
+Use the matching target directory, such as `armsr/` for the fnOS/OECT arm64 line, and verify the ImageBuilder archive with the official `sha256sums` file before building a rootfs release.
+
 ## Baseline
 
 - Container IP: `192.168.31.3`

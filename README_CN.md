@@ -28,6 +28,12 @@
 
 它需要官方 iStoreOS ImageBuilder URL 和精確 sha256。不要用未驗證或會漂移的 URL。
 
+官方 ImageBuilder 入口：
+
+- `https://fw.koolcenter.com/iStoreOS/ib/`
+
+選擇匹配的 target 目錄，例如 fnOS/OECT arm64 產線使用 `armsr/`，並先用官方 `sha256sums` 校驗 archive，再觸發 workflow。
+
 ## 網路基線
 
 - iStoreOS container IP：`192.168.31.3`

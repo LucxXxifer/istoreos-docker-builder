@@ -28,6 +28,12 @@ The manual workflow is:
 
 It requires an official iStoreOS ImageBuilder URL and its exact sha256. Do not run it with a drifting or unverified URL.
 
+Official ImageBuilder entry:
+
+- `https://fw.koolcenter.com/iStoreOS/ib/`
+
+Pick the matching target directory, such as `armsr/` for the fnOS/OECT arm64 line, and verify the archive against the official `sha256sums` file before triggering the workflow.
+
 ## Network Baseline
 
 - iStoreOS container IP: `192.168.31.3`
