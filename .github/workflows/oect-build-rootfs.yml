@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Release tag to create
+        description: New immutable release tag to create, or an existing tag that already points to this commit
         required: true
-        default: oect-istoreos-rootfs-manual
+        default: oect-istoreos-rootfs-20260707-r1
       imagebuilder_url:
         description: Official iStoreOS ImageBuilder .tar.zst URL
         required: true
@@ -16,6 +16,9 @@ on:
 
 permissions:
   contents: write
+
+env:
+  RELEASE_TAG: ${{ inputs.release_tag }}
 
 jobs:
   build-rootfs:
@@ -57,16 +60,22 @@ jobs:
       - name: Create release metadata
         run: |
           set -eu
-          chmod +x oect/production-manifest.sh
-          ./oect/production-manifest.sh "${{ inputs.release_tag }}" > dist/manifest.json
+          chmod +x oect/ensure-release-tag.sh oect/production-manifest.sh
+          ./oect/ensure-release-tag.sh "$RELEASE_TAG"
+          rootfs_file="$(find dist -maxdepth 1 -type f \( -name '*rootfs.tar.gz' -o -name '*rootfs.tar' \) | head -n 1)"
+          rootfs_sha="$(sha256sum "$rootfs_file" | awk '{print $1}')"
+          OECT_IMAGEBUILDER_URL="${{ inputs.imagebuilder_url }}" \
+          OECT_IMAGEBUILDER_SHA256="${{ inputs.imagebuilder_sha256 }}" \
+          OECT_ROOTFS_SHA256="$rootfs_sha" \
+          ./oect/production-manifest.sh "$RELEASE_TAG" rootfs > dist/manifest.json
           cp oect/README.md dist/SAFETY.md
           (cd dist && sha256sum * > SHA256SUMS)
 
       - name: Publish rootfs release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.release_tag }}
-          name: OECT iStoreOS rootfs ${{ inputs.release_tag }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: OECT iStoreOS rootfs ${{ env.RELEASE_TAG }}
           body_path: dist/SAFETY.md
           prerelease: true
           make_latest: false

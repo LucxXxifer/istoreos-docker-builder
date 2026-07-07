@@ -4,12 +4,18 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Release tag to create or update
+        description: New immutable release tag to create, or an existing tag that already points to this commit
         required: true
-        default: oect-istoreos-scaffold-20260706
+        default: oect-istoreos-scaffold-20260707-r1
+  push:
+    tags:
+      - oect-istoreos-scaffold-*
 
 permissions:
   contents: write
+
+env:
+  RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
 
 jobs:
   scaffold:
@@ -26,7 +32,7 @@ jobs:
           ./oect/security-scan.sh oect/files oect/security-denylist.txt
           ./oect/security-scan.sh targets/oect-fnos-arm64/files oect/security-denylist.txt
 
-      - name: Build scaffold artifacts
+      - name: Prepare scaffold artifacts
         run: |
           set -eu
           rm -rf dist
@@ -34,16 +40,25 @@ jobs:
           cp -a oect/files dist/seed-files/files
           cp -a targets/oect-fnos-arm64/config.seed targets/oect-fnos-arm64/packages.list targets/oect-fnos-arm64/build.sh dist/target-oect-fnos-arm64/
           cp -a oect/README.md dist/SAFETY.md
-          ./oect/production-manifest.sh "${{ inputs.release_tag }}" > dist/manifest.json
           tar -C dist/seed-files -czf dist/oect-istoreos-seed-files.tar.gz files
           tar -C dist/target-oect-fnos-arm64 -czf dist/oect-fnos-arm64-target.tar.gz .
+
+      - name: Ensure immutable release tag
+        run: |
+          chmod +x oect/ensure-release-tag.sh
+          ./oect/ensure-release-tag.sh "$RELEASE_TAG"
+
+      - name: Create release metadata
+        run: |
+          set -eu
+          ./oect/production-manifest.sh "$RELEASE_TAG" scaffold > dist/manifest.json
           (cd dist && sha256sum manifest.json SAFETY.md oect-istoreos-seed-files.tar.gz oect-fnos-arm64-target.tar.gz > SHA256SUMS)
 
       - name: Publish scaffold release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.release_tag }}
-          name: OECT iStoreOS scaffold ${{ inputs.release_tag }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: OECT iStoreOS scaffold ${{ env.RELEASE_TAG }}
           body_path: dist/SAFETY.md
           prerelease: true
           make_latest: false
