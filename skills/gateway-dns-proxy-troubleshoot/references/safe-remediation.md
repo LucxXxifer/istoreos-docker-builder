@@ -80,12 +80,25 @@ Change only one variable per attempt:
 | Private hostnames fail | One private suffix upstream/rewrite |
 | MagicDNS fails | One tailnet suffix or `100.64.0.0/10` bypass rule |
 | DNS loop | One upstream target or listener port |
+| DNS hijack bypasses front resolver | One redirect target role/port, discovered from live listeners |
+| Proxy DNS restart reverts | One persistent setting that owns the generated runtime value |
 | Docker macvlan IP conflict | One shim IP move, with all script references synchronized |
 | macvlan MAC drift | One `mac_address` pin for the container endpoint |
 | ARP flux between host and shim | One interface-specific `arp_ignore` change |
 | Shim return path timeout | One source policy rule for the shim IP |
 
 After each change, reload narrowly and reproduce. Do not batch unrelated fixes.
+
+Use placeholders in proposals and replace them only with current evidence from the target:
+
+| Placeholder | Meaning |
+| --- | --- |
+| `<front_resolver>` | The resolver expected to receive client DNS first, such as AdGuard or dnsmasq |
+| `<proxy_dns>` | The proxy core DNS listener, such as ShellCrash/OpenClash/Mihomo DNS |
+| `<upstream_dns>` | A non-looping upstream resolver used by the proxy or front resolver |
+| `<local_hostname>` / `<lan_domain>` | The LAN name pair that must resolve locally |
+
+Never reuse prior-case IP addresses, DNS providers, or port numbers as defaults. Discover them with listeners, runtime config, generated config, firewall redirects, and client network settings.
 
 ## Narrow Reloads
 
@@ -106,6 +119,8 @@ pgrep -af 'dnsmasq|AdGuard|openclash|shellcrash|mihomo|clash'
 ```
 
 For Clash/Mihomo API selector changes, do not change protected groups or AI platform selectors unless explicitly approved.
+
+After ShellCrash/OpenClash/Mihomo DNS changes, verify the owner layer after restart: persistent config, generated runtime config, listener ports, redirect target, and a fresh query log entry. A change that only survives until the next restart is not complete.
 
 ## Rollback Requirements
 

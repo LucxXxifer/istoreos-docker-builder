@@ -19,6 +19,10 @@ Domains to inspect as separate control-plane and download-plane buckets:
 
 Working rule of thumb: Play API and APK/CDN domains often need the same practical outlet. If API goes proxy and CDN goes DIRECT, downloads may show a percent and stall. If the user switches Play account regions, route these rules to an existing stable manual selector rather than a hard-coded country group.
 
+For APK/CDN domains, `gvt1.com`, `gvt2.com`, `gvt3.com`, `redirector.gvt1.com`, and `dl.google.com` are known Google Play CDN delivery surfaces. Verify current logs before adding domain rules; these domains are not automatically the root cause. If a current AdGuard/query log proves one of these is blocked or rewritten to a sink answer, prefer a narrow allowlist for the proven domain over a broad Google unblock.
+
+HTTPS smoke tests against these API/CDN roots may return `404` because the root path is not an application endpoint. Treat `404` as reachability evidence when DNS resolved, TCP connected, and TLS completed; keep investigating only when the result is timeout, connection refused/reset, TLS failure, captive portal, unexpected block page, or repeated `5xx`.
+
 Do not assume `app-measurement.com` is the root cause. It can be blocked without breaking every install, so use current logs and a reproduction before changing it.
 
 ## Apple App Store, iCloud, And Updates
@@ -70,6 +74,7 @@ Check:
 - Client DNS server and search domain.
 - dnsmasq local domain and host records.
 - AdGuard rewrites/upstream for private suffixes.
+- Both short hostname form and LAN FQDN form, for example `<local_hostname>` and `<local_hostname>.<lan_domain>`.
 - Clash/Mihomo fake-ip filter and bypass rules for private suffixes.
 - Tailscale MagicDNS status and whether `100.64.0.0/10` is in DIRECT/bypass.
 

@@ -24,6 +24,7 @@ Treat gateway DNS/proxy incidents as evidence-first operations. Start read-only,
 - Do not treat stale AdGuard query logs as current proof. Verify whether logs are still updating.
 - Do not repair multiple variables at once. One domain rule, one upstream, one redirect, or one selector per A/B step.
 - Do not copy prior-case IPs, MACs, interface names, route tables, or rule priorities. Discover the current target's values first.
+- Do not hard-code prior-case hostnames, DNS servers, LAN IPs, or ports into a new diagnosis. Use role names such as `<gateway_ip>`, `<adguard_dns_port>`, `<proxy_dns_port>`, and `<dnsmasq_port>`, then fill them from live evidence.
 
 ## Evidence Matrix
 
@@ -37,7 +38,7 @@ Collect enough evidence to locate the break:
 | AdGuard Home | Upstream, bootstrap, rewrites, block result, current query log | Blocked domain, stale log, loop to dnsmasq |
 | Proxy core DNS | Clash/Mihomo/OpenClash/ShellCrash DNS mode and fake-ip/redir-host | Domain resolves DIRECT or fake-ip breaks LAN |
 | Rule/outlet | Matched rule, chain, selector, CDN/control-plane outlet | API and CDN use different exits |
-| Firewall redirect | DNS hijack, TProxy/REDIR, nft/iptables rules | Traffic captured unexpectedly |
+| Firewall redirect | DNS hijack, TProxy/REDIR, nft/iptables target port and destination resolver | Traffic captured unexpectedly or bypasses AdGuard |
 | Tailscale | MagicDNS, `100.64.0.0/10`, subnet routes | Tailnet names or CGNAT range proxied |
 | Docker/macvlan | Container DNS, macvlan gateway, MAC map, neighbor table, link path | Container or side-router has separate path; single host port exposes multiple MACs |
 
@@ -63,7 +64,9 @@ Collect enough evidence to locate the break:
 ## Diagnosis Hints
 
 - App stores often need API/control-plane domains and CDN/download domains on a consistent outlet. For Google Play, a visible percent that never moves often means CDN routing, not login.
+- For HTTPS smoke tests against API/CDN roots, `404` can prove DNS, TCP, and TLS reachability; treat timeouts, connection failures, TLS failures, and unexpected `5xx` as network failures.
 - A blocked telemetry domain can be noisy evidence, not root cause. Unblock only when current logs and reproduction show it gates the failing flow.
+- For AdGuard + ShellCrash/OpenClash chains, prove the actual flow rather than assuming it from listeners: client DNS should reach the intended front resolver, proxy DNS should use a non-looping upstream, and firewall redirect should target the expected role port after restart.
 - When an internal host times out but ARP maps to the expected MAC, do not treat it as DNS first. Compare ICMP/TCP and ARP for the host IP, shim IP, and macvlan container IP from at least two LAN clients before changing DNS or proxy rules.
 - For Docker macvlan routers, consider pinning the container MAC only after current evidence proves MAC drift across restart/recreate. A stable IP with an unpinned macvlan MAC can poison client ARP and switch CAM state, but the current MAC must be discovered before proposing a pin.
 - For ShellCrash/OpenClash template-managed setups, durable fixes usually belong in rules or an existing template-stable selector, not ad hoc groups that disappear after update.
