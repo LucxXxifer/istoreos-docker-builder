@@ -38,3 +38,9 @@ Personal state belongs in a private local reapply pack, not in a public GitHub R
 ## Promotion Rule
 
 New images and plugin artifacts must be tested on an A/B IP such as `192.168.31.4` before replacing the production `.3` router. Passing this scaffold workflow is not enough to promote a live router.
+
+Live promotion must also pass the repository macvlan ARP/MAC runbook:
+
+- `../runbooks/docker-macvlan-arp.md`
+
+Do not promote if the iStoreOS container MAC drifts after restart/recreate, if a host-side shim uses another device's service IP, or if host/shim/container/peer IPs do not map to their intended MACs after ARP relearn and host reboot.

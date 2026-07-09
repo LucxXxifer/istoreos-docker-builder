@@ -46,6 +46,22 @@ target 備註：
 - DHCP server：關閉
 - LAN masquerade：`192.168.31.0/24 -> !192.168.31.0/24`
 
+通用 macvlan compose 範例見：
+
+- `examples/compose.macvlan.yml`
+
+Compose 變量速查：
+
+| 變量 | 含義 |
+| --- | --- |
+| `ISTORE_IMAGE` | 要運行的 iStoreOS/OpenWrt image tag |
+| `ISTORE_CONTAINER` | container 名稱，通常是 live router 名稱 |
+| `ISTORE_IP` | 預留給 iStoreOS 的 container LAN IP |
+| `ISTORE_MAC` | 證明發生 MAC drift 後，從現場探測並固定的 container macvlan endpoint MAC |
+| `LAN_PARENT` | 作為 macvlan parent 的 host LAN interface |
+| `LAN_SUBNET` | macvlan network 所在 LAN subnet |
+| `LAN_GATEWAY` | container 使用的 LAN gateway |
+
 ## 安全邊界
 
 公開 release 不得包含：
@@ -61,3 +77,15 @@ target 備註：
 ## Promote 規則
 
 產物要先在 A/B IP，例如 `192.168.31.4` 測試，通過後才能替換 `.3`。GitHub Actions PASS 不等於真 fnOS macvlan、LAN client、OECT reboot、可選 host BBR gate 全部通過。
+
+上線前還必須通過 macvlan ARP/MAC gate：
+
+- `runbooks/docker-macvlan-arp.md`
+
+最低要求：
+
+- container 在 `docker restart` 和 `docker compose up -d --force-recreate` 後仍保持同一個 IP 和已固定 MAC；
+- host-side macvlan shim 使用未被佔用的 helper IP，不能佔用其他 LAN 設備的服務 IP；
+- host IP、shim IP、container IP、其他 LAN 設備 IP 在 ARP 重新學習後都映射到正確 MAC；
+- shim source policy rule 必須使用目標主機實際存在的 LAN route table 和空閒 priority，不能照抄其他機器；
+- 最終 IP-to-MAC map 必須能通過 interface rebuild 和 host reboot。

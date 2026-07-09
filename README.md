@@ -46,6 +46,22 @@ Target note:
 - DHCP server: disabled
 - LAN masquerade: `192.168.31.0/24 -> !192.168.31.0/24`
 
+For a generic macvlan compose pattern with a pinned container MAC, see:
+
+- `examples/compose.macvlan.yml`
+
+Compose variable quick reference:
+
+| Variable | Meaning |
+| --- | --- |
+| `ISTORE_IMAGE` | iStoreOS/OpenWrt image tag to run |
+| `ISTORE_CONTAINER` | Container name, usually the live router name |
+| `ISTORE_IP` | Container LAN IP reserved for iStoreOS |
+| `ISTORE_MAC` | Container macvlan endpoint MAC discovered and pinned after drift is proven |
+| `LAN_PARENT` | Host LAN interface used as the macvlan parent |
+| `LAN_SUBNET` | LAN subnet for the macvlan network |
+| `LAN_GATEWAY` | LAN gateway for the container |
+
 ## Security Boundary
 
 Public releases must not contain:
@@ -61,3 +77,15 @@ Private runtime state belongs in a local private reapply pack, not in a public i
 ## Promotion Rule
 
 Build artifacts must be tested on an A/B IP such as `192.168.31.4` before replacing the production `.3` router. Passing GitHub Actions is not the same as passing live fnOS macvlan, LAN client, OECT reboot, and optional host BBR gates.
+
+Before promoting a live router, also pass the macvlan ARP/MAC gates in:
+
+- `runbooks/docker-macvlan-arp.md`
+
+At minimum, verify that:
+
+- the container keeps the same IP and pinned MAC across `docker restart` and `docker compose up -d --force-recreate`;
+- any host-side macvlan shim uses an unused helper IP, not another LAN device's service IP;
+- host IP, shim IP, container IP, and peer LAN device IP each map to the intended MAC after ARP relearn;
+- any shim source policy rule uses the target host's actual LAN route table and a free priority;
+- the final IP-to-MAC map survives interface rebuild and host reboot.

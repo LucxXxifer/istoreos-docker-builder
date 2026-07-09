@@ -1,0 +1,26 @@
+# Generic Docker macvlan compose example for iStoreOS/OpenWrt on fnOS or NAS hosts.
+# Replace all example values before use. Do not publish local MACs or secrets.
+
+services:
+  istoreos-router:
+    image: ${ISTORE_IMAGE:-oect/istoreos-router:latest}
+    container_name: ${ISTORE_CONTAINER:-istoreos-router}
+    privileged: true
+    restart: unless-stopped
+    command: /sbin/init
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    networks:
+      istore_lan:
+        ipv4_address: ${ISTORE_IP:?set ISTORE_IP}
+        mac_address: ${ISTORE_MAC:?set ISTORE_MAC}
+
+networks:
+  istore_lan:
+    driver: macvlan
+    driver_opts:
+      parent: ${LAN_PARENT:?set LAN_PARENT}
+    ipam:
+      config:
+        - subnet: ${LAN_SUBNET:?set LAN_SUBNET}
+          gateway: ${LAN_GATEWAY:?set LAN_GATEWAY}
