@@ -1,5 +1,7 @@
 # OECT fnOS iStoreOS Docker Builder
 
+[English](README.md)
+
 這是 OECT/fnOS Docker iStoreOS 旁路由的自用產線 fork。
 
 上游授權與 attribution 保留在 `LICENSE` 和 git history 中；本 fork 不冒充上游官方項目。
@@ -66,7 +68,8 @@ Compose 變量速查：
 
 - `runbooks/docker-macvlan-arp.md`：Docker macvlan ARP/MAC 穩定性的 live promotion gate。
 - `skills/gateway-dns-proxy-troubleshoot/SKILL.md`：用於 DNS、代理、Tailscale、AdGuard、Clash/Mihomo、Docker/macvlan 故障的 evidence-first agent skill。
-- `skills/README.md`：操作 skill bundle 的使用說明。
+- `skills/README.md`：操作 skill bundle 的英文使用說明。
+- `skills/README_CN.md`：操作 skill bundle 的可選中文使用說明。
 
 這個 skill 是診斷流程，不是自動修復腳本。使用時必須先只讀收集證據，填入當前目標的變量，再提出帶 backup / rollback 的單變量修復方案。
 

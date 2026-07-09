@@ -1,5 +1,7 @@
 # OECT fnOS iStoreOS Docker Builder
 
+[中文说明](README_CN.md)
+
 This fork is the production scaffold for building a private OECT/fnOS Docker iStoreOS side-router image line.
 
 Upstream attribution is preserved in `LICENSE` and git history. This fork does not claim to be the upstream project.
@@ -66,7 +68,8 @@ Compose variable quick reference:
 
 - `runbooks/docker-macvlan-arp.md`: live promotion gate for Docker macvlan ARP/MAC stability.
 - `skills/gateway-dns-proxy-troubleshoot/SKILL.md`: agent skill for evidence-first DNS, proxy, Tailscale, AdGuard, Clash/Mihomo, and Docker/macvlan troubleshooting.
-- `skills/README.md`: usage notes for the operational skill bundle.
+- `skills/README.md`: detailed usage notes for the operational skill bundle.
+- `skills/README_CN.md`: optional Traditional Chinese usage notes.
 
 Use the skill as a diagnostic workflow, not as an automatic repair script. Start read-only, discover the current target's variables, and only then propose a one-variable repair with backup and rollback.
 
