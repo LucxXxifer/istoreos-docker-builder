@@ -62,6 +62,14 @@ Compose 變量速查：
 | `LAN_SUBNET` | macvlan network 所在 LAN subnet |
 | `LAN_GATEWAY` | container 使用的 LAN gateway |
 
+## 操作 Runbook 與 Skill
+
+- `runbooks/docker-macvlan-arp.md`：Docker macvlan ARP/MAC 穩定性的 live promotion gate。
+- `skills/gateway-dns-proxy-troubleshoot/SKILL.md`：用於 DNS、代理、Tailscale、AdGuard、Clash/Mihomo、Docker/macvlan 故障的 evidence-first agent skill。
+- `skills/README.md`：操作 skill bundle 的使用說明。
+
+這個 skill 是診斷流程，不是自動修復腳本。使用時必須先只讀收集證據，填入當前目標的變量，再提出帶 backup / rollback 的單變量修復方案。
+
 ## 安全邊界
 
 公開 release 不得包含：

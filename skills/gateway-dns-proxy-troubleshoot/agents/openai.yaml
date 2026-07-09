@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gateway DNS Proxy Troubleshoot"
+  short_description: "Diagnose OpenWrt/iStoreOS DNS and proxy routing failures safely."
+  default_prompt: "Diagnose this gateway DNS/proxy failure in read-only mode first, then propose any fix with backup and rollback steps."

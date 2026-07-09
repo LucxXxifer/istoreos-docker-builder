@@ -42,5 +42,6 @@ New images and plugin artifacts must be tested on an A/B IP such as `192.168.31.
 Live promotion must also pass the repository macvlan ARP/MAC runbook:
 
 - `../runbooks/docker-macvlan-arp.md`
+- `../skills/gateway-dns-proxy-troubleshoot/SKILL.md` for evidence-first gateway DNS/proxy/macvlan troubleshooting
 
 Do not promote if the iStoreOS container MAC drifts after restart/recreate, if a host-side shim uses another device's service IP, or if host/shim/container/peer IPs do not map to their intended MACs after ARP relearn and host reboot.

@@ -62,6 +62,14 @@ Compose variable quick reference:
 | `LAN_SUBNET` | LAN subnet for the macvlan network |
 | `LAN_GATEWAY` | LAN gateway for the container |
 
+## Operational Runbooks And Skills
+
+- `runbooks/docker-macvlan-arp.md`: live promotion gate for Docker macvlan ARP/MAC stability.
+- `skills/gateway-dns-proxy-troubleshoot/SKILL.md`: agent skill for evidence-first DNS, proxy, Tailscale, AdGuard, Clash/Mihomo, and Docker/macvlan troubleshooting.
+- `skills/README.md`: usage notes for the operational skill bundle.
+
+Use the skill as a diagnostic workflow, not as an automatic repair script. Start read-only, discover the current target's variables, and only then propose a one-variable repair with backup and rollback.
+
 ## Security Boundary
 
 Public releases must not contain:
